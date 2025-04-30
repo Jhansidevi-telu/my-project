@@ -9,14 +9,46 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
+import Modal from "react-native-modal";
+import { useDispatch, useSelector } from "react-redux";
+import { checkUser } from "../../redux/slices/authSlice";
+import { auth } from "../../firebase/firebase"; 
+import { signInWithPhoneNumber } from "firebase/auth";
 
 
 const OtpScreen = ({ route, navigation }) => {
-  const { phoneNumber } = route.params;
+  const { confirmation, phoneNumber } = route.params;
+
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(30);
   const inputRefs = useRef([]);
+  const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const dispatch = useDispatch();
+const { isUserExists, loading, error } = useSelector((state) => state.auth);
+
+
+const handleVerifyOtp = async () => {
+  const enteredOtp = otp.join(""); 
+  try {
+    await confirmation.confirm(enteredOtp);
+    console.log("User signed in successfully!");
+    navigation.replace("AppTabs"); // or Home
+  } catch (error) {
+    console.error(error);
+    alert("Invalid OTP. Please try again.");
+  }
+};
+
+
+// Monitor changes
+useEffect(() => {
+  if (isUserExists === true) {
+    navigation.replace("AppTabs");
+  } else if (isUserExists === false) {
+    setShowBottomSheet(true);
+  }
+}, [isUserExists]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -43,19 +75,25 @@ const OtpScreen = ({ route, navigation }) => {
     setOtp(newOtp);
   };
 
-  const handleVerifyOtp = () => {
-    const enteredOtp = otp.join("");
-    if (enteredOtp !== "123456") {
-      Alert.alert("Error", "Invalid OTP. Please try again.");
-      return;
-    }
+  // const handleVerifyOtp = () => {
+  //   const enteredOtp = otp.join("");
+  //   if (enteredOtp !== "123456") {
+  //     Alert.alert("Error", "Invalid OTP. Please try again.");
+  //     return;
+  //   }
 
-    const isUserExists = Math.random() < 0.5;
-    if (isUserExists) {
-      navigation.replace("AppTabs");
-    } else {
-      navigation.replace("RegistrationScreen", { phoneNumber });
-    }
+  //   const isUserExists = Math.random() < 0.5;
+
+  //   if (isUserExists) {
+  //     navigation.replace("AppTabs");
+  //   } else {
+  //     setShowBottomSheet(true);
+  //   }
+  // };
+
+  const handleCreateAccount = () => {
+    setShowBottomSheet(false);
+    navigation.replace("RegistrationScreen", { phoneNumber });
   };
 
   return (
@@ -106,6 +144,27 @@ const OtpScreen = ({ route, navigation }) => {
           Retry
         </Text>
       </Text>
+
+      {/* Bottom Sheet Modal */}
+      <Modal
+        isVisible={showBottomSheet}
+        onBackdropPress={() => setShowBottomSheet(false)}
+        style={styles.modal}
+      >
+        <View style={styles.sheetContent}>
+          <Text style={styles.sheetTitle}>OTP Verified ✅</Text>
+          <Text style={styles.sheetSubtitle}>
+            But we couldn't find your account.
+          </Text>
+          <Text style={styles.sheetSubtitle}>
+            Do you want to create a new one?
+          </Text>
+
+          <TouchableOpacity style={styles.createBtn} onPress={handleCreateAccount}>
+            <Text style={styles.createBtnText}>Create Account</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };
@@ -115,8 +174,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 24,
-    justifyContent: "flex-start", 
-    paddingTop: 60, 
+    justifyContent: "flex-start",
+    paddingTop: 60,
+  },
+  backButton: {
+    position: "absolute",
+    top: 40,
+    left: 20,
+    zIndex: 10,
   },
   heading: {
     fontSize: 26,
@@ -124,14 +189,13 @@ const styles = StyleSheet.create({
     color: "#000",
     marginLeft: 12,
     marginBottom: 6,
-    marginTop:15,
+    marginTop: 15,
   },
   phone: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#000",
     marginBottom: 30,
-
     marginLeft: 12,
   },
   otpContainer: {
@@ -182,6 +246,41 @@ const styles = StyleSheet.create({
   resendLink: {
     color: "#fc8019",
     fontWeight: "bold",
+  },
+  // Bottom Sheet Styles
+  modal: {
+    justifyContent: "flex-end",
+    margin: 0,
+  },
+  sheetContent: {
+    backgroundColor: "#fff",
+    padding: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    alignItems: "center",
+  },
+  sheetTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  sheetSubtitle: {
+    fontSize: 15,
+    textAlign: "center",
+    color: "#666",
+    marginBottom: 10,
+  },
+  createBtn: {
+    backgroundColor: "#fc8019",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  createBtnText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
 

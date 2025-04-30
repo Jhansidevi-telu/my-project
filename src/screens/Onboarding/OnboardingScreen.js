@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
@@ -11,12 +11,16 @@ import {
 import Swiper from "react-native-swiper";
 import { LinearGradient } from "expo-linear-gradient";
 import Modal from "react-native-modal";
+import { auth } from "../../firebase/firebase"; // adjust path based on your folder
+import { signInWithPhoneNumber } from "firebase/auth";
+import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 
 const { width, height } = Dimensions.get("window");
 
 const OnboardingScreen = ({ navigation }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [confirmation, setConfirmation] = useState(null);
 
   const slides = [
     {
@@ -44,13 +48,28 @@ const OnboardingScreen = ({ navigation }) => {
     setModalVisible(true);
   };
 
-  const handleLogin = () => {
-    // You can add validation and navigation here
-    if (phoneNumber.trim().length === 10) {
-      setModalVisible(false);
-      navigation.replace("OTP Verification",{ phoneNumber: phoneNumber }); // Or pass phone number
-    } else {
-      alert("Please enter a valid 10-digit phone number.");
+  const recaptchaVerifier = useRef(null); // Add useRef
+
+  const handleSendOtp = async () => {
+    try {
+      if (phoneNumber.trim().length !== 10) {
+        alert("Please enter a valid 10-digit phone number.");
+        return;
+      }
+
+      const fullPhoneNumber = "+1" + phoneNumber.trim();
+
+      const confirmation = await signInWithPhoneNumber(
+        auth,
+        fullPhoneNumber,
+        recaptchaVerifier.current
+      );
+
+      setConfirmation(confirmation);
+      navigation.replace("OTP Verification", { confirmation ,phoneNumber});
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Failed to send OTP. Please try again.");
     }
   };
 
@@ -66,7 +85,10 @@ const OnboardingScreen = ({ navigation }) => {
       >
         {slides.map((slide, index) => (
           <View key={slide.id} style={styles.slide}>
-            <ImageBackground source={slide.image} style={styles.backgroundImage}>
+            <ImageBackground
+              source={slide.image}
+              style={styles.backgroundImage}
+            >
               <LinearGradient
                 colors={[
                   "rgba(59, 39, 28, 0.2)",
@@ -81,7 +103,10 @@ const OnboardingScreen = ({ navigation }) => {
               </View>
               {index === slides.length - 1 && (
                 <View style={{ flex: 1, marginTop: 50, marginBottom: 20 }}>
-                  <TouchableOpacity style={styles.button} onPress={handleGetStarted}>
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={handleGetStarted}
+                  >
                     <Text style={styles.buttonText}>Get Started</Text>
                   </TouchableOpacity>
                 </View>
@@ -108,11 +133,15 @@ const OnboardingScreen = ({ navigation }) => {
             onChangeText={setPhoneNumber}
             maxLength={10}
           />
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <TouchableOpacity style={styles.loginButton} onPress={handleSendOtp}>
             <Text style={styles.loginButtonText}>Continue</Text>
           </TouchableOpacity>
         </View>
       </Modal>
+      <FirebaseRecaptchaVerifierModal
+        ref={recaptchaVerifier}
+        firebaseConfig={auth.app.options}
+      />
     </View>
   );
 };

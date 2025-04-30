@@ -14,12 +14,21 @@ import RegistrationScreen from "../screens/Authentication/RegistrationScreen";
 import LocationPermissionScreen from "../screens/Authentication/LocationPermissionScreen";
 import ManualLocationScreen from "../screens/Authentication/ManualLocationScreen ";
 import NotificationScreen from "../screens/Authentication/NotificationScreen";
-
+import OrderSuccessScreen from "../screens/Menu/OrderSuccessScreen";
+import OrderHistoryScreen from "../screens/Menu/OrderHistoryScreen";
+import RestaurantDetailsScreen from "../screens/Menu/RestaurantDetailsScreen";
+import SearchScreen from "../screens/Menu/SearchScreen";
+import OffersScreen from "../screens/Menu/OffersScreen";
+import SettingsScreen from "../screens/Menu/SettingsScreen";
+import TrackOrderScreen from "../screens/Menu/TrackOrderScreen";
+import FavoritesScreen from "../screens/Menu/FavoritesScreen";
+import EditProfileScreen from "../screens/Menu/EditProfileScreen";
+import SavedAddressesScreen from "../screens/Menu/SavedAddressesScreen";
+import RatingReviewScreen from "../screens/Menu/RatingReviewScreen";
+import CheckoutScreen from "../screens/Menu/CheckoutScreen";
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
-
 const AppNavigator = () => {
-  // Bottom Tab Navigator for Home, Menu, Cart, Profile
   const TabNavigator = () => {
     return (
       <Tab.Navigator
@@ -43,7 +52,7 @@ const AppNavigator = () => {
                 size={24}
                 color="#000"
                 style={{ marginRight: 15 }}
-                onPress={() => navigation.navigate("Cart")} // Navigate to Cart screen
+                onPress={() => navigation.navigate("Cart")}
               />
             ),
           })}
@@ -67,7 +76,6 @@ const AppNavigator = () => {
             ),
           }}
         />
-
         <Tab.Screen
           name="Profile"
           component={ProfileScreen}
@@ -90,10 +98,9 @@ const AppNavigator = () => {
       </Tab.Navigator>
     );
   };
-
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="LocationPermissionScreen">
+      <Stack.Navigator initialRouteName="TrackOrder">
         <Stack.Screen
           name="Onboard"
           component={OnboardingScreen}
@@ -129,16 +136,29 @@ const AppNavigator = () => {
           component={NotificationScreen}
           options={{ headerShown: false }}
         />
-
         <Stack.Screen
           name="AppTabs"
           component={TabNavigator}
           options={{ headerShown: false }}
         />
         <Stack.Screen name="Cart" component={CartScreen} />
+        <Stack.Screen name="OrderSuccess" component={OrderSuccessScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
+        <Stack.Screen
+          name="RestaurantDetails"
+          component={RestaurantDetailsScreen}
+        />
+        <Stack.Screen name="Search" component={SearchScreen} />
+        <Stack.Screen name="Offers" component={OffersScreen} />
+        <Stack.Screen name="TrackOrder" component={TrackOrderScreen} />
+        <Stack.Screen name="Favorites" component={FavoritesScreen} />
+        <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+        <Stack.Screen name="CheckoutScreen" component={CheckoutScreen} />
+        <Stack.Screen name="SavedAddresses" component={SavedAddressesScreen} />
+        <Stack.Screen name="RatingReview" component={RatingReviewScreen} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 };
-
 export default AppNavigator;

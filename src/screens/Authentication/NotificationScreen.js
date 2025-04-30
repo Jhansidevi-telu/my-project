@@ -1,11 +1,25 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import * as Permissions from 'expo-permissions';
 
 const NotificationScreen = ({ navigation }) => {
+  const requestNotificationPermission = async () => {
+    const { status } = await Notifications.requestPermissionsAsync();
+
+    if (status === 'granted') {
+      console.log('Notification permission granted');
+      navigation.replace('AppTabs');
+    } else {
+      Alert.alert('Permission denied', 'You can enable notifications later from settings.');
+      navigation.replace('AppTabs');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Image
-        source={require('../../assets/notification.jpg')} // Replace with your notification image
+        source={require('../../assets/notification.jpg')}
         style={styles.image}
       />
       <Text style={styles.title}>Get updates on your order status</Text>
@@ -13,7 +27,7 @@ const NotificationScreen = ({ navigation }) => {
         Allow push notifications to get real-time updates on your order status.
       </Text>
 
-      <TouchableOpacity style={styles.primaryButton} onPress={() => navigation.replace('AppTabs')}>
+      <TouchableOpacity style={styles.primaryButton} onPress={requestNotificationPermission}>
         <Text style={styles.primaryButtonText}>Turn on Notification</Text>
       </TouchableOpacity>
 
